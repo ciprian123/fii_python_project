@@ -46,6 +46,7 @@ class PasswordManagerUtil:
         cipher = AES.new(self.key, mode=AES.MODE_CFB, iv=self.__iv)
         encrypted_password = cipher.encrypt(password.encode('utf8'))
         self.cursor.execute('UPDATE password_manager SET website = ?, username = ?, password = ? WHERE website = ? AND username = ?', (website, username, encrypted_password, website, username))
+        self.connection.commit()
 
     def remove_password(self, password_manager, website):
         pass
@@ -64,5 +65,5 @@ if __name__ == '__main__':
     pw_manager = PasswordManagerUtil('112233')
     # pw_manager.add_password('112233', 'gmail.com', 'ciprian.ursulean5@gmail.com', '12311223344556677')
     # pw_manager.add_password('112233', 'github.com', 'ciprian.ursulean5@gmail.com', 'githubhehehe')
-    pw_manager.update_password('112233', 'github.com', 'ciprian.ursulean5@gmail.com', 'parolahehehe')
+    # pw_manager.update_password('112233', 'github.com', 'ciprian.ursulean5@gmail.com', 'parolahehehe')
     pw_manager.get_password('112233', 'github.com')
