@@ -49,10 +49,29 @@ class PasswordManagerUtil:
         self.connection.commit()
 
     def remove_password(self, password_manager, website):
-        pass
+        if self.password_manager != password_manager:
+            print('Wrong password! Try again!')
+            return
+
+        self.cursor.execute('DELETE FROM password_manager WHERE website = ?', (website, ))
+        self.connection.commit()
+        print('PASSWORD DELETED SUCCESSFULLY!')
 
     def list_passwords(self, password_manager):
-        pass
+        if self.password_manager != password_manager:
+            print('Wrong password! Try again!')
+            return
+
+        print('LISTING PASSWORDS... ')
+        rows = self.cursor.execute('SELECT website, username, password FROM password_manager')
+        counter = 0
+        for row in list(rows):
+            cipher = AES.new(self.key, mode=AES.MODE_CFB, iv=self.__iv)
+            decrypted_password = cipher.decrypt(row[2]).decode('utf8')
+            print(f'WEBSITE: {row[0]}  |   USERNAME: {row[1]}   |   PASSWORD: {decrypted_password}')
+            counter += 1
+        if counter == 0:
+            print('NO PASSWORDS SO FAR :(')
 
     def delete_all_passwords(self, password_manager):
         pass
@@ -66,4 +85,7 @@ if __name__ == '__main__':
     # pw_manager.add_password('112233', 'gmail.com', 'ciprian.ursulean5@gmail.com', '12311223344556677')
     # pw_manager.add_password('112233', 'github.com', 'ciprian.ursulean5@gmail.com', 'githubhehehe')
     # pw_manager.update_password('112233', 'github.com', 'ciprian.ursulean5@gmail.com', 'parolahehehe')
-    pw_manager.get_password('112233', 'github.com')
+    # pw_manager.remove_password('112233', 'github.com')
+    # pw_manager.get_password('112233', 'gmail.com')
+    # pw_manager.get_password('112233', 'github.com')
+    pw_manager.list_passwords('112233')
