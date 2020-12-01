@@ -74,7 +74,17 @@ class PasswordManagerUtil:
             print('NO PASSWORDS SO FAR :(')
 
     def delete_all_passwords(self, password_manager):
-        pass
+        if self.password_manager != password_manager:
+            print('Wrong password! Try again!')
+            return
+        print('WARNING, THIS OPERATION WILL DELETE ALL YOU PASSWORDS!')
+        input_password = input('Enter your master password to confirm: ')
+        if self.password_manager != input_password:
+            print('Wrong password, exiting...')
+            return
+        self.cursor.execute('DELETE FROM password_manager')
+        self.connection.commit()
+        print('DATA DELETED SUCCESSFULLY!')
 
     def print_help(self):
         pass
@@ -89,3 +99,4 @@ if __name__ == '__main__':
     # pw_manager.get_password('112233', 'gmail.com')
     # pw_manager.get_password('112233', 'github.com')
     pw_manager.list_passwords('112233')
+    pw_manager.delete_all_passwords('112233')
