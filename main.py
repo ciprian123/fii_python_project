@@ -1,5 +1,8 @@
+#!/usr/bin/python
+
 from Crypto.Cipher import AES
 import sqlite3
+import sys
 
 
 class PasswordManagerUtil:
@@ -32,12 +35,11 @@ class PasswordManagerUtil:
             return
         print('USERNAME AND PASSWORDS FOR WEBSITE:', website)
         cipher = AES.new(self.key, mode=AES.MODE_CFB, iv=self.__iv)
-        rows = self.cursor.execute('SELECT username, password FROM password_manager WHERE website = ?', (website, ))
-        found = False
+        rows = self.cursor.execute('SELECT username, password FROM password_manager WHERE website = ?', (website, )).fetchall()
         for row in rows:
-            decrypted_password, found = cipher.decrypt(row[1]).decode('utf8'), True
+            decrypted_password = cipher.decrypt(row[1]).decode('utf8')
             print(f'USERNAME: {row[0]}  :  PASSWORD: {decrypted_password}')
-        if not found:
+        if len(rows) == 0:
             print(f'NO PASSWORD FOR WEBSITE {website} :(')
 
     def update_password(self, password_manager, website, username, password):
@@ -63,13 +65,13 @@ class PasswordManagerUtil:
             print('Wrong password! Try again!')
             return
         print('LISTING PASSWORDS... ')
-        rows = self.cursor.execute('SELECT website, username, password FROM password_manager')
+        rows = self.cursor.execute('SELECT website, username, password FROM password_manager').fetchall()
         counter = 0
         for row in list(rows):
             cipher = AES.new(self.key, mode=AES.MODE_CFB, iv=self.__iv)
-            decrypted_password, counter = cipher.decrypt(row[2]).decode('utf8'), counter + 1
+            decrypted_password = cipher.decrypt(row[2]).decode('utf8')
             print(f'WEBSITE: {row[0]}  |   USERNAME: {row[1]}   |   PASSWORD: {decrypted_password}')
-        if counter == 0:
+        if len(rows) == 0:
             print('NO PASSWORDS SO FAR :(')
 
     def delete_all_passwords(self, master_password):
@@ -86,16 +88,21 @@ class PasswordManagerUtil:
         print('DATA DELETED SUCCESSFULLY!')
 
     def print_help(self):
-        pass
+        print('`-add` command has the following parameters: <website> <username> <password>')
+        print('`-get` command has the following parameters: <website>')
+        print('`-update` command has the following parameters: <website> <username> <new_password>')
+        print('`-remove` command has the following parameters: <website>')
+        print('`-list` command has no parameters')
 
 
 if __name__ == '__main__':
     pw_manager = PasswordManagerUtil('112233')
-    # pw_manager.add_password('112233', 'gmail.com', 'ciprian.ursulean5@gmail.com', '12311223344556677')
+    pw_manager.add_password('112233', 'gmail.com', 'ciprian.ursulean5@gmail.com', '12311223344556677')
     pw_manager.add_password('112233', 'steam.com', 'ciprian.ursulean5@gmail.com', 'dota2islife')
     # pw_manager.update_password('112233', 'github.com', 'ciprian.ursulean5@gmail.com', 'parolahehehe')
     # pw_manager.remove_password('112233', 'github.com')
     # pw_manager.get_password('112233', 'gmail.com')
     # pw_manager.get_password('112233', 'github.com')
     pw_manager.list_passwords('112233')
+    # pw_manager.print_help()
     # pw_manager.delete_all_passwords('112233')
