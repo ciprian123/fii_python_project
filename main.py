@@ -95,14 +95,30 @@ class PasswordManagerUtil:
         print('`-list` command has no parameters')
 
 
+def bind_master_password():
+    connection = sqlite3.connect('password_manager.db')
+    cursor = connection.cursor()
+    rows = cursor.execute('SELECT master_password FROM manager').fetchall()
+    password_set = len([row for row in rows]) != 0
+    if not password_set:
+        print('It looks like you haven\'t set a master password!')
+        master_password = input('Enter your password: ')
+        cursor.execute('INSERT INTO manager (master_password) VALUES (?)', (master_password, ))
+        connection.commit()
+        print('Master password set successfully!')
+        return master_password
+    return rows[0][0]
+
+
 if __name__ == '__main__':
-    pw_manager = PasswordManagerUtil('112233')
-    pw_manager.add_password('112233', 'gmail.com', 'ciprian.ursulean5@gmail.com', '12311223344556677')
-    pw_manager.add_password('112233', 'steam.com', 'ciprian.ursulean5@gmail.com', 'dota2islife')
+    _master_password = bind_master_password()
+    pw_manager = PasswordManagerUtil(_master_password)
+    # pw_manager.add_password(_master_password, 'gmail.com', 'ciprian.ursulean5@gmail.com', '12311223344556677')
+    # pw_manager.add_password(_master_password, 'steam.com', 'ciprian.ursulean5@gmail.com', 'dota2islife')
     # pw_manager.update_password('112233', 'github.com', 'ciprian.ursulean5@gmail.com', 'parolahehehe')
     # pw_manager.remove_password('112233', 'github.com')
     # pw_manager.get_password('112233', 'gmail.com')
     # pw_manager.get_password('112233', 'github.com')
-    pw_manager.list_passwords('112233')
+    pw_manager.list_passwords(_master_password)
     # pw_manager.print_help()
     # pw_manager.delete_all_passwords('112233')
