@@ -34,9 +34,9 @@ class PasswordManagerUtil:
             print('Wrong password! Try again!')
             return
         print('USERNAME AND PASSWORDS FOR WEBSITE:', website)
-        cipher = AES.new(self.key, mode=AES.MODE_CFB, iv=self.__iv)
         rows = self.cursor.execute('SELECT username, password FROM password_manager WHERE website = ?', (website, )).fetchall()
         for row in rows:
+            cipher = AES.new(self.key, mode=AES.MODE_CFB, iv=self.__iv)
             decrypted_password = cipher.decrypt(row[1]).decode('utf8')
             print(f'USERNAME: {row[0]}  :  PASSWORD: {decrypted_password}')
         if len(rows) == 0:
@@ -93,6 +93,7 @@ class PasswordManagerUtil:
         print('`-update` command has the following parameters: <website> <username> <new_password>')
         print('`-remove` command has the following parameters: <website>')
         print('`-list` command has no parameters')
+        print('`-help` command has no parameters')
 
 
 def bind_master_password():
@@ -113,12 +114,22 @@ def bind_master_password():
 if __name__ == '__main__':
     _master_password = bind_master_password()
     pw_manager = PasswordManagerUtil(_master_password)
-    # pw_manager.add_password(_master_password, 'gmail.com', 'ciprian.ursulean5@gmail.com', '12311223344556677')
-    # pw_manager.add_password(_master_password, 'steam.com', 'ciprian.ursulean5@gmail.com', 'dota2islife')
-    # pw_manager.update_password('112233', 'github.com', 'ciprian.ursulean5@gmail.com', 'parolahehehe')
-    # pw_manager.remove_password('112233', 'github.com')
-    # pw_manager.get_password('112233', 'gmail.com')
-    # pw_manager.get_password('112233', 'github.com')
-    pw_manager.list_passwords(_master_password)
-    # pw_manager.print_help()
-    # pw_manager.delete_all_passwords('112233')
+
+    if len(sys.argv) == 2:
+        if sys.argv[1] == '-list':
+            pw_manager.list_passwords(_master_password)
+        elif sys.argv[1] == '-help':
+            pw_manager.print_help()
+    elif len(sys.argv) == 3:
+        if sys.argv[1] == '-get':
+            print(sys.argv[2])
+            pw_manager.get_password(_master_password, sys.argv[2])
+        elif sys.argv[1] == '-remove':
+            pw_manager.remove_password(_master_password, sys.argv[2])
+    elif len(sys.argv) == 5:
+        if sys.argv[1] == '-add':
+            pw_manager.add_password(_master_password, sys.argv[2], sys.argv[3], sys.argv[4])
+        elif sys.argv[1] == '-update':
+            pw_manager.update_password(_master_password, sys.argv[2], sys.argv[3], sys.argv[4])
+    else:
+        pw_manager.print_help()
