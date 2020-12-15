@@ -3,7 +3,7 @@
 from Crypto.Cipher import AES
 import sqlite3
 import sys
-
+import os.path
 
 class PasswordManagerUtil:
     def __init__(self, master_password):
@@ -106,9 +106,7 @@ class PasswordManagerUtil:
 
         self.cursor.execute('DELETE FROM password_manager')
         self.connection.commit()
-
         for decrypted_row in decrypted_list:
-            print(decrypted_row)
             self.add_password(self.master_password, decrypted_row[0], decrypted_row[1], decrypted_row[2])
 
     def print_help(self):
@@ -123,6 +121,10 @@ class PasswordManagerUtil:
 
 
 def bind_master_password():
+    # todo verifica daca exista baza de date
+    if not os.path.exists('password_manager.db'):
+        print("Baza de date nu exista!")
+        return False
     connection = sqlite3.connect('password_manager.db')
     cursor = connection.cursor()
     rows = cursor.execute('SELECT master_password FROM manager').fetchall()
@@ -139,36 +141,40 @@ def bind_master_password():
 
 if __name__ == '__main__':
     _master_password = bind_master_password()
-    pw_manager = PasswordManagerUtil(_master_password)
-
-    if len(sys.argv) == 3:
-        if sys.argv[2] == '-list':
-            pw_manager.list_passwords(sys.argv[1])
-        elif sys.argv[2] == '-help':
-            pw_manager.print_help()
-        elif sys.argv[2] == '-reset':
-            pw_manager.delete_all_passwords(sys.argv[1])
-        elif sys.argv[2] == '-change_master_password':
-            if _master_password == sys.argv[1]:
-                new_master_password = input('Enter the new master password: ')
-                pw_manager.update_master_password(sys.argv[1], new_master_password)
-            else:
-                print('Wrong password! Try again!')
-        else:
-            pw_manager.print_help()
-    elif len(sys.argv) == 4:
-        if sys.argv[2] == '-get':
-            pw_manager.get_password(sys.argv[1], sys.argv[3])
-        elif sys.argv[2] == '-remove':
-            pw_manager.remove_password(sys.argv[1], sys.argv[3])
-        else:
-            pw_manager.print_help()
-    elif len(sys.argv) == 6:
-        if sys.argv[2] == '-add':
-            pw_manager.add_password(sys.argv[1], sys.argv[3], sys.argv[4], sys.argv[5])
-        elif sys.argv[2] == '-update':
-            pw_manager.update_password(sys.argv[1], sys.argv[3], sys.argv[4], sys.argv[5])
-        else:
-            pw_manager.print_help()
+    if not _master_password:
+        print("Baza de date incorecta sau inexistenta!")
     else:
-        pw_manager.print_help()
+        pw_manager = PasswordManagerUtil(_master_password)
+
+        if len(sys.argv) == 3:
+            if sys.argv[2] == '-list':
+                pw_manager.list_passwords(sys.argv[1])
+            elif sys.argv[2] == '-help':
+                pw_manager.print_help()
+            elif sys.argv[2] == '-reset':
+                pw_manager.delete_all_passwords(sys.argv[1])
+            elif sys.argv[2] == '-change_master_password':
+                if _master_password == sys.argv[1]:
+                    new_master_password = input('Enter the new master password: ')
+                    pw_manager.update_master_password(sys.argv[1], new_master_password)
+                else:
+                    print('Wrong password! Try again!')
+            else:
+                pw_manager.print_help()
+        elif len(sys.argv) == 4:
+            if sys.argv[2] == '-get':
+                pw_manager.get_password(sys.argv[1], sys.argv[3])
+            elif sys.argv[2] == '-remove':
+                pw_manager.remove_password(sys.argv[1], sys.argv[3])
+            else:
+                pw_manager.print_help()
+        elif len(sys.argv) == 6:
+            if sys.argv[2] == '-add':
+                pw_manager.add_password(sys.argv[1], sys.argv[3], sys.argv[4], sys.argv[5])
+            elif sys.argv[2] == '-update':
+                pw_manager.update_password(sys.argv[1], sys.argv[3], sys.argv[4], sys.argv[5])
+            else:
+                pw_manager.print_help()
+        else:
+            pw_manager.print_help()
+
