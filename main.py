@@ -23,6 +23,12 @@ class PasswordManagerUtil:
         if self.master_password != password_manager:
             print('Wrong password! Try again!')
             return
+
+        rows = self.cursor.execute('SELECT * FROM password_manager WHERE website = ? AND username = ?', (website, username)).fetchall()
+        if len(rows) > 0:
+            print("Website si username deja existent in baza de date!")
+            return
+
         cipher = AES.new(self.key, mode=AES.MODE_CFB, iv=self.__iv)
         encrypted_password = cipher.encrypt(password.encode('utf8'))
         self.cursor.execute('INSERT INTO password_manager (website, username, password) VALUES (?, ?, ?)', (website, username, encrypted_password))
